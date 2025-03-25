@@ -231,6 +231,12 @@ class Actaentregacab extends Model
             ->get();
     }
 
+	public function puntoRecaudacion()
+	{
+		return $this->belongsTo(TblPuntosRecaudacion::class, 'punto_recaud_id', 'punto_recaud_id');
+	}
+
+
 	/**
      * Indicates if the model should be timestamped.
      *
