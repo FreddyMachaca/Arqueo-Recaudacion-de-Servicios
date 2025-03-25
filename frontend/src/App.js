@@ -115,6 +115,11 @@ import 'primereact/resources/primereact.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'assets/styles/layout.scss';
+import ArqueoRecaudacionPage from 'pages/arqueo-recaudacion/index';
+import ArqueoRecaudacionAddPage from 'pages/arqueo-recaudacion/Add';
+import ArqueoRecaudacionViewPage from 'pages/arqueo-recaudacion/View';
+import ArqueoRecaudacionEditPage from 'pages/arqueo-recaudacion/Edit';
+
 const App = () => {
 	const auth = useAuth();
 	function DefaultPage(){
@@ -129,6 +134,11 @@ const App = () => {
 			<Route element={<MainLayout />}>
 				<Route path="/home" element={<HomePage />} />
 				
+				{/* arqueo-recaudacion routes - Orden específico para evitar conflictos */}
+				<Route path="/arqueo-recaudacion/add" element={<ArqueoRecaudacionAddPage />} />
+				<Route path="/arqueo-recaudacion/edit/:id" element={<ArqueoRecaudacionEditPage />} />
+				<Route path="/arqueo-recaudacion/:id" element={<ArqueoRecaudacionViewPage />} />
+				<Route path="/arqueo-recaudacion" element={<ArqueoRecaudacionPage />} />
 
 				{/* actaentregacab pages routes */}
 				<Route path="/actaentregacab" element={<ActaentregacabList />} />
