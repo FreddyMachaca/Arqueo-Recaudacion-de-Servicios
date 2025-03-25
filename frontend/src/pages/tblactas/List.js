@@ -17,6 +17,8 @@ import axios from "axios";
 import MyPDF from '../../pdf/ActasTemplate'
 import TemplateActa from '../../pdf/ActasTemplate2'
 
+
+
 const TblActasList = () => {
   const [actas, setActas] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -26,15 +28,17 @@ const TblActasList = () => {
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
+  const [newActa, setNewActa] = useState();
 
   useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await axios.get('actas/index/ae_estado/A');
+      //console.log(data)
+      setActas(data);
+    }
     fetchData();
   }, [])
-  
-  const fetchData = async () => {
-    const { data } = await axios.get('actas/index/ae_estado/P');
-    setActas(data);
-  }
+
 
   const toast = useRef(null);
 
@@ -58,16 +62,12 @@ const TblActasList = () => {
     );
   };
 
-  const searchActa = async () => {
-    try {
-      const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
-
-      const { data } = await axios.get(`/actas/index?ae_estado=${estado}&ae_fecha=${formattedDate}`);
-
-      setActas(data);
-    } catch (error) {
-        console.error("Error al buscar datos:", error);
-    }
+  const searchActa = () => {
+    toast.current.show({
+      severity: "info",
+      summary: "Búsqueda",
+      detail: "Buscando actas de entrega",
+    });
   };
 
   const onPageChange = (event) => {
@@ -163,7 +163,11 @@ const TblActasList = () => {
                     <span className="p-inputgroup-addon">
                       <Checkbox checked={true} />
                     </span>
-                    <Calendar value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="p-inputtext-sm"
+                    <Calendar
+                      value={fecha}
+                      onChange={(e) => setFecha(e.value)}
+                      showIcon
+                      className="p-inputtext-sm"
                     />
                   </div>
                 </div>
@@ -174,16 +178,23 @@ const TblActasList = () => {
                     <span className="p-inputgroup-addon">
                       <Checkbox checked={true} />
                     </span>
-                    <InputText value={estado} onChange={(e) => setEstado(e.target.value)} className="p-inputtext-sm"/>
+                    <InputText
+                      value={estado}
+                      onChange={(e) => setEstado(e.target.value)}
+                      className="p-inputtext-sm"
+                    />
                   </div>
                 </div>
 
-              </div>
-                <div className="flex justify-content-end mt-2 mr-5">
-                  <div>
-                    <Button label="BUSCAR DATOS DE ACTA ENTREGA" icon="pi pi-search" className="p-button-rounded p-button-info p-button-sm w-full" onClick={searchActa}/>
-                  </div>
+                <div className="w-20rem">
+                  <Button
+                    label="BUSCAR DATOS DE ACTA ENTREGA"
+                    icon="pi pi-search"
+                    className="p-button-rounded p-button-info p-button-sm w-full"
+                    onClick={searchActa}
+                  />
                 </div>
+              </div>
             </Card>
             {/* DataTable */}
             <Card className="m-3 mt-3">
@@ -218,7 +229,7 @@ const TblActasList = () => {
                 />
                 <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2"/>
                 <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2"/>
-                <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
+                <Column field="punto_recaud_id" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
                 <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2"/>
                 <Column field="ae_grupo" header="GRUPO" className="text-xs py-1 px-2"/>
                 <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2"/>
@@ -258,7 +269,7 @@ const TblActasList = () => {
                 <DialogActa
                   visible={modalVisible}
                   onHide={() => setModalVisible(false)} 
-                  reloadData={fetchData}
+                  actaData={newActa} 
                 />
               )}
             </div>

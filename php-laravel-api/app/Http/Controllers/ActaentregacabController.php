@@ -20,21 +20,8 @@ class ActaentregacabController extends Controller
      * @param string $fieldvalue //filter value
      * @return \Illuminate\View\View
      */
-	function index(Request $request, $filter = null, $filtervalue = null){
-		$query = Actaentregacab::query()->with(['puntoRecaudacion:punto_recaud_id,puntorecaud_nombre']);
-
-        if ($filter && $filtervalue) {
-            $query->where($filter, $filtervalue);
-        }
-    
-        if ($request->has('ae_estado') && !empty($request->ae_estado)) {
-            $query->where('ae_estado', $request->ae_estado);
-        }
-    
-        if ($request->has('ae_fecha') && !empty($request->ae_fecha)) {
-            $query->whereDate('ae_fecha', $request->ae_fecha);
-        }
-
+	function index(Request $request, $fieldname = null , $fieldvalue = null){
+		$query = Actaentregacab::query();
 		if($request->search){
 			$search = trim($request->search);
 			Actaentregacab::search($query, $search);
@@ -42,9 +29,9 @@ class ActaentregacabController extends Controller
 		$orderby = $request->orderby ?? "actaentregacab.ae_actaid";
 		$ordertype = $request->ordertype ?? "desc";
 		$query->orderBy($orderby, $ordertype);
-		// if($fieldname){
-		// 	$query->where($fieldname , $fieldvalue); //filter by a single field name
-		// }
+		if($fieldname){
+			$query->where($fieldname , $fieldvalue); //filter by a single field name
+		}
 		$records = $query->select(Actaentregacab::listFields())->get();
 		return $this->respond($records);
 	}
@@ -126,7 +113,7 @@ class ActaentregacabController extends Controller
                 'ae_fechero' => $request->fechero,
                 'ae_tampo' => $request->tampo,
                 'ae_candados' => $request->candados,
-                'ae_estado' => "P",
+                'ae_estado' => "A",
             ];
             $record = Actaentregacab::create($actaCab);
             // Verifica que el ID se haya generado correctamente
@@ -145,7 +132,7 @@ class ActaentregacabController extends Controller
                     'aed_cantidad' => $registro['cantidad_boletos'],
                     'aed_preciounitario' => $registro['precio_unitario'],
                     'aed_importebs' => $registro['importe_total'],
-                    'aed_estado' => "P",
+                    'aed_estado' => "A",
                 ]);
             }
 
