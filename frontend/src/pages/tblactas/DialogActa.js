@@ -13,7 +13,7 @@ import DialogActaDet from './DialogActaDet';
 import axios from 'axios';
 
 
-function DialogActa({visible, onHide}) {
+function DialogActa({visible, onHide, reloadData}) {
     const toast = useRef(null);
     const [ dialogActaDet, setDialogActaDet ] = useState(false);
     const [ registros, setRegistros ] = useState([]);
@@ -21,6 +21,7 @@ function DialogActa({visible, onHide}) {
     const [ currentData, setCurrentData ] = useState(null);
     const [ tiposPunto, setTiposPunto ] = useState([]);
     const [ tipoPuntoSelec, setTipoPuntoSelec] = useState();
+    const [isSaving, setIsSaving] = useState(false);
     const [errores, setErrores] = useState({});
     const [fecha, setFecha] = useState(null);
     const [observacion, setObservacion] = useState(""); 
@@ -65,6 +66,25 @@ function DialogActa({visible, onHide}) {
     }
 
     const handleSaveDet = (newRecord) => {
+        const solapamiento = registros.some(record => {
+            if (newRecord.id && record.id === newRecord.id) return false;
+            
+            return (
+                (newRecord.desde_numero >= record.desde_numero && newRecord.desde_numero <= record.hasta_numero) ||
+                (newRecord.hasta_numero >= record.desde_numero && newRecord.hasta_numero <= record.hasta_numero) ||
+                (newRecord.desde_numero <= record.desde_numero && newRecord.hasta_numero >= record.hasta_numero)
+            );
+        });
+    
+        if (solapamiento) {
+            toast.current.show({
+                severity: "error",
+                summary: "Error",
+                detail: "El rango de números se solapa con un registro existente",
+                life: 3000,
+            });
+            return; 
+        }
         
         setRegistros(prevRegistros => {
             if (newRecord.id) {
@@ -107,6 +127,7 @@ function DialogActa({visible, onHide}) {
     };
 
     const handleSaveActa = async () => {
+        setIsSaving(true);
         try {
             if (!validarFormulario()) return; 
 
@@ -135,21 +156,22 @@ function DialogActa({visible, onHide}) {
                   importe_total: (r.cantidad_boletos * r.precio_unitario)
                 })),
               };
-          console.log("datos a ser almacenados:",acta);
           
           await axios.post("/actas", acta);
           
           if(toast.current){
-              toast.current.show({
-                severity: "success",
-                summary: "Éxito",
-                detail: "Acta registrada exitosamente.",
-                life: 3000,
-              });
-              setTimeout(() => {
+            toast.current.show({
+            severity: "success",
+            summary: "Éxito",
+            detail: "Acta registrada exitosamente.",
+            life: 3000,
+            });
+            setTimeout(() => {
+                setIsSaving(false);
                 onHide();
-              }, 3000);
+            }, 3000);
           }
+
         } catch (error) {
           console.error("Error saving acta:", error);
           toast.current.show({
@@ -158,17 +180,14 @@ function DialogActa({visible, onHide}) {
             detail: "No se pudo guardar el acta",
             life: 3000,
           });
-        }
+        } finally{
+            reloadData();
+        } 
     }
 
     useEffect(() => {
         fetchPuntos();
-      }, []);
-
-    useEffect(() => {
-      console.log(tipoPuntoSelec)
-    }, [tipoPuntoSelec])
-    
+    }, []);    
     
     const fetchPuntos = async () => {
         try {
@@ -186,7 +205,7 @@ function DialogActa({visible, onHide}) {
   return (
     <>
         <Toast ref={toast} />
-        <Dialog visible={visible} onHide={onHide} header="Nuevo Acta de Entrega"  style={{ width: "75vw" }} >
+        <Dialog toast={toast} visible={visible} onHide={onHide} header="Nuevo Acta de Entrega"  style={{ width: "75vw" }} >
             <Card style={{ backgroundColor: "#f8f9fa" }}>
                 {/* FIRST ROW */}
                 <div className="grid">
@@ -267,9 +286,7 @@ function DialogActa({visible, onHide}) {
 
                 <div className="flex justify-content-between mt-3">
                     <div className="flex">
-                        <Button label="GUARDAR" icon="pi pi-save" className="p-button-success mr-2" onClick={handleSaveActa}/>
-                        <Button label="CANCELAR"
-                        icon="pi pi-times" className="p-button-danger"/>
+                        <Button label="GUARDAR" icon="pi pi-save" className="p-button-success mr-2" onClick={handleSaveActa} disabled={isSaving} />
                     </div>
                     <div>
                         <Button icon="pi pi-bars" className="p-button-rounded p-button-info" style={{ width: "3.5rem", height: "3.5rem" }} onClick={openDialogActa}/>

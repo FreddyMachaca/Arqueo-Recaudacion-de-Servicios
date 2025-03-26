@@ -20,6 +20,27 @@ export default function useMenus() {
     "target": "",
   },
   {
+    "to": "/tblactas/view",
+    "label": "Acta Entrega",
+    "icon": "pi pi-money-bill",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
+    "to": "/arqueo-recaudacion",
+    "label": "Arqueo Recaudación",
+    "icon": "pi pi-money-bill",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
+    "to": "cajas/registro/prevaloradas",
+    "label": "Registro de Prevaloradas",
+    "icon": "pi pi-money-bill",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
     "to": "/actaentregacab",
     "label": "Actaentregacab",
     "icon": "pi pi-th-large",

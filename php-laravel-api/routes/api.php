@@ -240,6 +240,17 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::any('users/edit/{rec_id}', 'UsersController@edit');	
 	Route::any('users/delete/{rec_id}', 'UsersController@delete');
 
+/* routes for ArqueoRecaudacion Controller */
+	Route::get('arqueo-recaudacion', 'ArqueoRecaudacionController@index');
+	Route::post('arqueo-recaudacion', 'ArqueoRecaudacionController@store');
+	Route::get('arqueo-recaudacion/{id}', 'ArqueoRecaudacionController@view');
+	Route::put('arqueo-recaudacion/{id}', 'ArqueoRecaudacionController@update');
+	Route::get('arqueo-recaudacion-puntos', 'ArqueoRecaudacionController@getPuntosRecaudacion');
+	Route::get('arqueo-recaudacion-servicios', 'ArqueoRecaudacionController@getServicios');
+	Route::get('arqueo-recaudacion-correlativo', 'ArqueoRecaudacionController@getNextCorrelativo');
+	Route::post('arqueo-recaudacion-final', 'ArqueoRecaudacionController@generarArqueoFinal');
+	Route::get('arqueo-recaudacion-resumen', 'ArqueoRecaudacionController@obtenerResumenPorServicios');
+	Route::get('arqueo-recaudacion-numero', 'ArqueoRecaudacionController@getNextNumeroArqueo');
 });
 
 Route::get('home', 'HomeController@index');
@@ -275,4 +286,4 @@ Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
 
 Route::post('/actas', [ActaentregacabController::class, 'store']);
 
-Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');	
+Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
