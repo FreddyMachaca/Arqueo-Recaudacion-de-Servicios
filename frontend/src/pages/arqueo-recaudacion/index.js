@@ -58,7 +58,6 @@ export default function ArqueoRecaudacionPage() {
             const response = await api.get(url);
             setArqueos(response.data);
         } catch (error) {
-            console.error('Error al cargar arqueos:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -97,7 +96,40 @@ export default function ArqueoRecaudacionPage() {
     };
     
     const fechaTemplate = (rowData) => {
-        return formatDate(rowData.arqueofecha, 'dd/MM/yyyy');
+        try {
+            // Convertir la fecha a formato YYYY-MM-DD para evitar problemas de zona horaria
+            if (!rowData.arqueofecha) return '';
+            
+            // Si la fecha viene como string, extraer solo la parte de fecha
+            if (typeof rowData.arqueofecha === 'string') {
+                // Para una fecha en formato ISO
+                if (rowData.arqueofecha.includes('T')) {
+                    const fechaParts = rowData.arqueofecha.split('T')[0].split('-');
+                    if (fechaParts.length === 3) {
+                        // Crear una fecha en formato local (sin hora) para evitar ajustes por zona horaria
+                        return `${fechaParts[2]}/${fechaParts[1]}/${fechaParts[0]}`;
+                    }
+                } else {
+                    // Para una fecha en formato YYYY-MM-DD
+                    const fechaParts = rowData.arqueofecha.split('-');
+                    if (fechaParts.length === 3) {
+                        return `${fechaParts[2]}/${fechaParts[1]}/${fechaParts[0]}`;
+                    }
+                }
+            }
+            
+            // Si la fecha es un objeto Date o si los formatos anteriores fallaron
+            const fecha = new Date(rowData.arqueofecha);
+            // Ajustar la fecha para obtener el día correcto sin ajustes de zona horaria
+            const dia = fecha.getDate();
+            const mes = fecha.getMonth() + 1;
+            const anio = fecha.getFullYear();
+            
+            return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`;
+        } catch (error) {
+            console.error('Error al formatear fecha:', error);
+            return formatDate(rowData.arqueofecha, 'dd/MM/yyyy');
+        }
     };
     
     const importeTemplate = (rowData) => {
@@ -124,6 +156,15 @@ export default function ArqueoRecaudacionPage() {
                 )}
             </div>
         );
+    };
+
+    const getTurnoDisplay = (turnoCode) => {
+        switch(turnoCode) {
+            case 'M': return 'Mañana';
+            case 'T': return 'Tarde';
+            case 'N': return 'Noche';
+            default: return turnoCode;
+        }
     };
 
     return (
@@ -190,9 +231,27 @@ export default function ArqueoRecaudacionPage() {
             >
                 <Column field="arqueocorrelativo" header="Correlativo" sortable />
                 <Column field="arqueofecha" header="Fecha" body={fechaTemplate} sortable />
-                <Column field="arqueoturno" header="Turno" sortable />
+                <Column 
+                    field="arqueoturno" 
+                    header="Turno" 
+                    sortable
+                    body={(rowData) => getTurnoDisplay(rowData.arqueoturno)}
+                />
                 <Column field="arqueonombreoperador" header="Operador" sortable />
-                <Column field="puntoRecaudacion.puntorecaud_nombre" header="Punto Recaudación" sortable />
+                <Column 
+                    field="puntoRecaudacion.puntorecaud_nombre" 
+                    header="Punto Recaudación" 
+                    body={(rowData) => {
+                        if (rowData.puntoRecaudacion && rowData.puntoRecaudacion.puntorecaud_nombre) {
+                            return rowData.puntoRecaudacion.puntorecaud_nombre;
+                        } else if (rowData.punto_recaudacion && rowData.punto_recaudacion.puntorecaud_nombre) {
+                            return rowData.punto_recaudacion.puntorecaud_nombre;
+                        } else {
+                            return 'No especificado';
+                        }
+                    }}
+                    sortable
+                />
                 <Column header="Total" body={importeTemplate} sortable />
                 <Column header="Estado" body={estadoTemplate} sortable />
                 <Column header="Acciones" body={accionesTemplate} />
